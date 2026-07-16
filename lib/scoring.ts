@@ -230,6 +230,13 @@ export function calculateRound(input: CalculateRoundInput, matchScore?: MatchSco
   const bidderTeam = teamForSeat(input.bidder_position);
 
   if (input.reverse_kaboot_team) {
+    // Reverse kaboot keeps its fixed 88-point card value, then adds the
+    // winning team's valid projects. Baloot is already excluded here because
+    // reverse kaboot is only available in صن/أشكل.
+    const winner = input.reverse_kaboot_team;
+    const winnerProjects = winner === "A" ? summary.aProjects : summary.bProjects;
+    const winnerBaloot = winner === "A" ? summary.aBaloot : summary.bBaloot;
+    const winnerTotal = 88 + winnerProjects + winnerBaloot;
     return {
       ...input,
       team_a_base: bases.a,
@@ -239,14 +246,21 @@ export function calculateRound(input: CalculateRoundInput, matchScore?: MatchSco
       team_a_baloot: summary.aBaloot,
       team_b_baloot: summary.bBaloot,
       counted_project_team: summary.countedTeam,
-      bidder_failed: bidderTeam !== input.reverse_kaboot_team,
-      team_a_total: input.reverse_kaboot_team === "A" ? 88 : 0,
-      team_b_total: input.reverse_kaboot_team === "B" ? 88 : 0,
+      bidder_failed: bidderTeam !== winner,
+      team_a_total: winner === "A" ? winnerTotal : 0,
+      team_b_total: winner === "B" ? winnerTotal : 0,
     };
   }
 
   if (input.kaboot_team) {
+    // Kaboot keeps its fixed card value (44 in صن/أشكل, 25 in حكم), then
+    // adds the winning team's valid projects. بلوت remains worth two points
+    // and is never multiplied. The losing side stays at zero.
+    const winner = input.kaboot_team;
     const kaboot = input.game_type === "حكم" ? 25 : 44;
+    const winnerProjects = winner === "A" ? summary.aProjects : summary.bProjects;
+    const winnerBaloot = winner === "A" ? summary.aBaloot : summary.bBaloot;
+    const winnerTotal = kaboot + winnerProjects + winnerBaloot;
     return {
       ...input,
       team_a_base: bases.a,
@@ -256,9 +270,9 @@ export function calculateRound(input: CalculateRoundInput, matchScore?: MatchSco
       team_a_baloot: summary.aBaloot,
       team_b_baloot: summary.bBaloot,
       counted_project_team: summary.countedTeam,
-      bidder_failed: bidderTeam !== input.kaboot_team,
-      team_a_total: input.kaboot_team === "A" ? kaboot : 0,
-      team_b_total: input.kaboot_team === "B" ? kaboot : 0,
+      bidder_failed: bidderTeam !== winner,
+      team_a_total: winner === "A" ? winnerTotal : 0,
+      team_b_total: winner === "B" ? winnerTotal : 0,
     };
   }
 

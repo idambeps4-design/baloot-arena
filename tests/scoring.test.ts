@@ -148,6 +148,56 @@ test("kaboot values override multiplier", () => {
   assert.equal(reverse.team_b_total, 88);
 });
 
+test("sun kaboot adds سري، خمسين، مية and أربعمئة projects", () => {
+  const result = calculateRound(basic({
+    kaboot_team: "A",
+    projects: [
+      { team: "A", type: "سرى", quantity: 1 },
+      { team: "A", type: "خمسين", quantity: 1 },
+      { team: "A", type: "مية", quantity: 1 },
+      { team: "A", type: "أربعمئة", quantity: 1 },
+    ],
+  }));
+
+  assert.equal(result.team_a_projects, 74);
+  assert.equal(result.team_a_total, 118);
+  assert.equal(result.team_b_total, 0);
+});
+
+test("hokum kaboot adds projects and keeps baloot at two points", () => {
+  const result = calculateRound(basic({
+    game_type: "حكم",
+    kaboot_team: "B",
+    projects: [
+      { team: "B", type: "سرى", quantity: 1 },
+      { team: "B", type: "خمسين", quantity: 1 },
+      { team: "B", type: "مية", quantity: 1 },
+      { team: "B", type: "بلوت", quantity: 1 },
+    ],
+  }));
+
+  assert.equal(result.team_b_projects, 17);
+  assert.equal(result.team_b_baloot, 2);
+  assert.equal(result.team_b_total, 44);
+  assert.equal(result.team_a_total, 0);
+});
+
+test("reverse kaboot adds the winning team's projects", () => {
+  const result = calculateRound(basic({
+    reverse_kaboot_team: "B",
+    projects: [
+      { team: "B", type: "سرى", quantity: 1 },
+      { team: "B", type: "خمسين", quantity: 1 },
+      { team: "B", type: "مية", quantity: 1 },
+      { team: "B", type: "أربعمئة", quantity: 1 },
+    ],
+  }));
+
+  assert.equal(result.team_b_projects, 74);
+  assert.equal(result.team_b_total, 162);
+  assert.equal(result.team_a_total, 0);
+});
+
 test("coffee is 152 points", () => {
   const result = calculateRound(basic({
     game_type: "حكم",

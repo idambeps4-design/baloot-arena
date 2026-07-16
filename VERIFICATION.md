@@ -1,6 +1,6 @@
-# Verification — Baloot Arena v1.0 Final Candidate
+# Verification — Baloot Arena v1.0.1
 
-Verification date: 16 July 2026
+Verification date: 17 July 2026
 
 Environment used:
 
@@ -20,11 +20,11 @@ npm run check:registry
 ## Results
 
 - `npm ci`: passed using the public npm registry.
-- Automated tests: **47/47 passed**.
+- Automated tests: **50/50 passed**.
 - TypeScript `tsc --noEmit`: passed.
 - Next.js production build: passed and generated the `/` route as static content.
 - `.npmrc` and every locked package source use `registry.npmjs.org`.
-- The final `lib/scoring.ts` SHA-256 matches the newest base candidate exactly, confirming that the latest scoring engine and its rule fixes were not replaced.
+- The newest scoring rules remain in place; only the كبوت and كبوت عكسي branches were corrected to include the winning team’s projects and unmultiplied بلوت.
 
 ## Test coverage
 
@@ -40,6 +40,8 @@ The automated suite covers:
 - دبل، ثري and فور awarding all applicable points to the winner and zero to the loser.
 - بلوت remaining unmultiplied, including the verified `80`-point example.
 - كبوت، كبوت عكسي and قهوة.
+- كبوت adding valid سرى، خمسين، مية، أربعمئة and بلوت points to the winning team.
+- كبوت عكسي adding the winning team’s valid projects to 88 points.
 - Immediate completed-match merging for standings and profile statistics.
 - Matches played, wins, losses, percentages, winning and losing streaks, bids, كبوت, قهوة, projects, partners and opponents.
 - Failed bidder jokes.

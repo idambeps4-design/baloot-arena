@@ -40,6 +40,21 @@ Example in حكم at ثري:
 - بلوت: 2
 - Total: `(16 + 10) × 3 + 2 = 80`
 
+## كبوت and كبوت عكسي
+
+- كبوت keeps its fixed card value: 44 in صن/أشكل and 25 in حكم.
+- Valid projects belonging to the كبوت winner are added to the fixed value.
+- In حكم, بلوت is added at its normal value of 2 and is not multiplied.
+- كبوت عكسي keeps its fixed 88-point value and adds the winning team's valid projects.
+- The losing team receives zero for the round.
+- تكبير does not multiply the fixed كبوت or كبوت عكسي value.
+
+Examples:
+
+- صن كبوت with سرى + خمسين + مية + أربعمئة: `44 + 4 + 10 + 20 + 40 = 118`.
+- حكم كبوت with سرى + خمسين + مية + بلوت: `25 + 2 + 5 + 10 + 2 = 44`.
+- كبوت عكسي with سرى + خمسين + مية + أربعمئة: `88 + 4 + 10 + 20 + 40 = 162`.
+
 ## Statistics and jokes
 
 - Successful and failed bid statistics belong to the effective bidder.

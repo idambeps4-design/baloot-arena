@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1 — Kaboot Project Scoring Fix
+
+- Fixed كبوت so the winning team receives its valid سرى، خمسين، مية، أربعمئة and بلوت points in addition to the fixed كبوت value.
+- Fixed كبوت عكسي so the winning team receives its valid projects in addition to 88 points.
+- Kept the losing team at zero during كبوت and كبوت عكسي.
+- Kept بلوت at its normal two points without multiplication.
+- Added regression tests for صن كبوت, حكم كبوت with بلوت, and كبوت عكسي projects.
+
 ## 1.0.0 Final Candidate — Contextual Match Experience
 
 - Preserved the newest scoring engine without modification, including the latest تكبير, صن/أشكل and بلوت fixes.
