@@ -101,7 +101,7 @@ export default function Page() {
   const playerProfiles = useMemo(() => buildPlayerProfiles(players, matches, hands), [hands, matches, players]);
 
   return <main className="appShell">
-    <header className="topBar"><div className="logo"><span>♠</span><div><strong>ساحة البلوت</strong><small>الحسبة والمنافسات</small></div></div><ThemeToggle/></header>
+    <header className="topBar"><div className="logo"><span>♠</span><div><strong>Balot Arena</strong><small>الحسبة والمنافسات</small></div></div><ThemeToggle/></header>
     <div className="content">
       {!isSupabaseConfigured && <div className="alert">أضف متغيرات Supabase في Vercel ثم أعد النشر.</div>}
       {error && <div className="alert">{error}</div>}

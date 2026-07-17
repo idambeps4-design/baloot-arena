@@ -1,6 +1,6 @@
-# Baloot Arena — Deployment from Scratch
+# Balot Arena v1.1.0 — Deployment from Scratch
 
-This guide deploys the final candidate using a new Supabase project, GitHub, and Vercel.
+This guide deploys the verified Balot Arena PWA using a new or existing Supabase project, GitHub, and Vercel.
 
 ## 1. Requirements
 
@@ -99,7 +99,7 @@ Open the local address shown by Next.js. Add four players, play a completed comp
 ```bash
 git init
 git add .
-git commit -m "Deploy Baloot Arena v1.0"
+git commit -m "Deploy Balot Arena v1.1.0 PWA"
 git branch -M main
 git remote add origin YOUR_GITHUB_REPOSITORY_URL
 git push -u origin main
@@ -152,3 +152,27 @@ npm test
 npm run typecheck
 npm run build
 ```
+
+## 10. Verify and install the PWA
+
+After Vercel finishes, open these URLs and confirm they load:
+
+```text
+https://YOUR-DOMAIN/manifest.webmanifest
+https://YOUR-DOMAIN/sw.js
+https://YOUR-DOMAIN/icons/icon-512.png
+```
+
+On iPhone:
+
+1. Delete any older Home Screen shortcut so iOS does not retain an old icon.
+2. Open the Vercel site in Safari.
+3. Tap Share.
+4. Choose **Add to Home Screen**.
+5. Keep the name **Balot Arena**.
+6. Enable **Open as Web App** if it is displayed.
+7. Tap **Add**.
+
+The PWA can reopen its cached interface, but Supabase still requires internet for players, completed-match saving, profiles, and leaderboard updates.
+
+No Supabase SQL change is required when upgrading from v1.0.1 to v1.1.0.

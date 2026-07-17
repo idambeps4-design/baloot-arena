@@ -27,3 +27,16 @@
 - [x] Consecutive completed matches avoid repeating the same joke when a valid alternative exists.
 - [x] Joke logic is isolated in `lib/jokes.ts` and cannot modify scoring totals.
 - [x] Every requested joke condition has automated coverage.
+
+## v1.1.0 PWA
+
+- [x] Application and installed name set to `Balot Arena`.
+- [x] Arabic RTL manifest with standalone display mode.
+- [x] Apple touch, 192, 512, 1024, maskable, and favicon assets.
+- [x] Service worker caches only the app shell and static assets.
+- [x] Cross-origin Supabase, `/api/`, and RSC requests are excluded from caching.
+- [x] iPhone safe areas for Dynamic Island and Home indicator.
+- [x] Safari installation guidance and supported-browser install button.
+- [x] Offline connection warning and offline fallback page.
+- [x] PWA tests added and complete suite verified.
+- [x] Scoring, saving, analytics, and joke modules unchanged.

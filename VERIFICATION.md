@@ -1,4 +1,4 @@
-# Verification — Baloot Arena v1.0.1
+# Verification — Balot Arena v1.1.0 PWA
 
 Verification date: 17 July 2026
 
@@ -20,38 +20,26 @@ npm run check:registry
 ## Results
 
 - `npm ci`: passed using the public npm registry.
-- Automated tests: **50/50 passed**.
+- Automated tests: **54/54 passed**.
 - TypeScript `tsc --noEmit`: passed.
-- Next.js production build: passed and generated the `/` route as static content.
+- Next.js production build: passed.
+- Static routes generated: `/`, `/manifest.webmanifest`, and `/offline`.
 - `.npmrc` and every locked package source use `registry.npmjs.org`.
-- The newest scoring rules remain in place; only the كبوت and كبوت عكسي branches were corrected to include the winning team’s projects and unmultiplied بلوت.
+- Production server check returned a valid `application/manifest+json` manifest.
+- `/sw.js` returned `Service-Worker-Allowed: /` and no-cache headers.
+- Required icon dimensions were validated automatically: 180×180, 192×192, 512×512, and maskable 512×512.
+- Service-worker tests confirm that API, React Server Component, and cross-origin requests are excluded from caching.
+- iPhone safe-area and standalone metadata checks passed.
 
-## Test coverage
+## Preserved application logic
 
-The automated suite covers:
+The PWA work did not modify the verified scoring, saving, analytics, or joke modules. Their before/after SHA-256 values are identical:
 
-- Opposing-team score-entry default and manual score-team selection support.
-- Dealer movement, صن/حكم conversion and rounding.
-- Project precedence and bidder failure.
-- Last مكبر becoming the effective bidder.
-- Multiplied ties counting as a loss for the effective bidder.
-- صن and أشكل stopping at دبل.
-- صن/أشكل دبل requiring bidder team score `>= 100` and opponent score `< 100`.
-- دبل، ثري and فور awarding all applicable points to the winner and zero to the loser.
-- بلوت remaining unmultiplied, including the verified `80`-point example.
-- كبوت، كبوت عكسي and قهوة.
-- كبوت adding valid سرى، خمسين، مية، أربعمئة and بلوت points to the winning team.
-- كبوت عكسي adding the winning team’s valid projects to 88 points.
-- Immediate completed-match merging for standings and profile statistics.
-- Matches played, wins, losses, percentages, winning and losing streaks, bids, كبوت, قهوة, projects, partners and opponents.
-- Failed bidder jokes.
-- عبدالله شريف normalization, loss-only behavior and top priority.
-- كبوت, كبوت عكسي, قهوة, comeback, large victory, close match, streak and project jokes.
-- Contradiction prevention for literal team/requester joke lines.
-- Consecutive-match joke rotation.
-- Maximum two final jokes.
-- Arabic final summary and factual storyline.
-- نجم الصكة based on successful bids, important rounds, projects, كبوت and قهوة contribution.
-- مفلس الصكة based on failed bids, repeated round losses, low contribution and losing-team status.
+```text
+e888457eec35baeeed186e2dad13b49d3d3514d142887b37be056beaa57885e7  lib/scoring.ts
+89fcd7cf685f2e010a1387c15fa5e8d23dc3a22a98edfa2c57a918418188440f  lib/data.ts
+fade02772fc66e19209bfd7b09e899da9c8df177bad7c4cf102f0053204fde92  lib/analytics.ts
+861182a8df5290e8facb536b45db1d91d52aa977d08c1315832be7d36c08a9c6  lib/jokes.ts
+```
 
-The Supabase SQL files were packaged and reviewed but were not executed against a live user database because credentials were not provided. For a new database run `supabase/setup.sql`; for an older Baloot Arena database run `supabase/v1.sql`.
+The Supabase SQL was not changed for v1.1.0. No database migration is required when upgrading from the verified v1.0.1 release.
