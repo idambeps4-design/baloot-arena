@@ -1,7 +1,7 @@
 "use client";
 import { Home, Users, Calculator, Trophy, BarChart3 } from "lucide-react";
 
-export type Tab = "home" | "players" | "casual" | "competition" | "standings";
+export type Tab = "home" | "players" | "casual" | "competition" | "standings" | "stats";
 
 const items: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "home", label: "الرئيسية", icon: <Home size={20} /> },
@@ -9,6 +9,7 @@ const items: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "casual", label: "الحسبة", icon: <Calculator size={20} /> },
   { id: "competition", label: "المنافسات", icon: <Trophy size={20} /> },
   { id: "standings", label: "الترتيب", icon: <BarChart3 size={20} /> },
+  { id: "stats", label: "الإحصائيات", icon: <BarChart3 size={20} /> },
 ];
 
 export default function Nav({ tab, setTab }: { tab: Tab; setTab: (tab: Tab) => void }) {

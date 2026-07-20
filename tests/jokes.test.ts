@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildMatchJokes,
   buildRoundAnnouncement,
+  buildProgressAnnouncement,
   detectRoundJokeEvent,
   JOKE_CATALOG,
 } from "../lib/jokes";
@@ -101,7 +102,7 @@ test("Abdullah Sharif round joke normalizes spaces and has priority over every o
     round: round({ bidder_failed: true, kaboot_team: "B", team_a_total: 0, team_b_total: 44 }),
   });
   assert.equal(result?.id, "abdullah-sharif-inspection");
-  assert.equal(result?.text, "زخه التفتيش");
+  assert.equal(result?.text, "سوالفك معاك هندية، وراخينك التفتيش جنك بنقالي صايع");
   assert.equal(result?.special, true);
 });
 
@@ -149,7 +150,7 @@ test("Abdullah Sharif game joke appears on a loss, has priority, and disappears 
   const playerNames = ["عبدالله   شريف", "محمد", "سالم", "راشد"] as [string, string, string, string];
   const loss = buildMatchJokes(matchInput({ playerNames, scoreA: 100, scoreB: 152 }));
   assert.equal(loss.jokeIds[0], "abdullah-sharif-inspection");
-  assert.equal(loss.jokes[0], "زخه التفتيش");
+  assert.equal(loss.jokes[0], "سوالفك معاك هندية، وراخينك التفتيش جنك بنقالي صايع");
 
   const win = buildMatchJokes(matchInput({ playerNames, scoreA: 152, scoreB: 100 }));
   assert.equal(win.detectedEvents.includes("abdullah"), false);
@@ -298,4 +299,18 @@ test("literal team-two comeback line is not used when team two completes the com
     scoreB: 152,
   }));
   assert.equal(result.jokeIds.includes("comeback-1"), false);
+});
+
+
+test("round 11 shows the long match joke once", () => {
+  const rounds = Array.from({ length: 11 }, (_, index) => round({ sequence_no: index + 1, team_a_total: index % 2 ? 10 : 11, team_b_total: index % 2 ? 11 : 10 }));
+  assert.equal(buildProgressAnnouncement(rounds)?.text, "البنزين قضى وما قضينا");
+  assert.equal(buildProgressAnnouncement([...rounds, round({ sequence_no: 12 })]), null);
+});
+
+test("three consecutive round losses trigger only on the third loss", () => {
+  const firstTwo = [round({ sequence_no: 1, team_a_total: 10, team_b_total: 20 }), round({ sequence_no: 2, team_a_total: 10, team_b_total: 20 })];
+  assert.equal(buildProgressAnnouncement(firstTwo), null);
+  assert.equal(buildProgressAnnouncement([...firstTwo, round({ sequence_no: 3, team_a_total: 10, team_b_total: 20 })])?.text, "قدم مستوى يا هطف");
+  assert.equal(buildProgressAnnouncement([...firstTwo, round({ sequence_no: 3, team_a_total: 10, team_b_total: 20 }), round({ sequence_no: 4, team_a_total: 10, team_b_total: 20 })]), null);
 });

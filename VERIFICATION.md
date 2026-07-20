@@ -43,3 +43,10 @@ fade02772fc66e19209bfd7b09e899da9c8df177bad7c4cf102f0053204fde92  lib/analytics.
 ```
 
 The Supabase SQL was not changed for v1.1.0. No database migration is required when upgrading from the verified v1.0.1 release.
+
+## v1.3.0 verification
+- `npm test`: 58/58 passed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed with all routes statically generated.
+- `npm run check:registry`: passed.
+- No database migration required from v1.1.0.

@@ -1,11 +1,10 @@
 "use client";
 
 import { ChevronDown, ChevronUp, Minus, Plus, Save, Sparkles, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import DealerTable from "./DealerTable";
 import {
   calculateRound,
-  dealerLeftSeat,
   gameEnded,
   nextDealerToRight,
   projectSummary,
@@ -13,11 +12,12 @@ import {
   defaultScoreTeamForBidder,
   sunMultiplierAllowed,
   teamForSeat,
-  teammateSeat,
   validateRawScore,
   validateRoundInput,
 } from "@/lib/scoring";
 import { buildMatchSummary, buildRoundAnnouncement } from "@/lib/analytics";
+import { buildProgressAnnouncement } from "@/lib/jokes";
+import { SOUND_SETTING_EVENT, SOUND_SETTING_KEY } from "./SoundToggle";
 import { supabase } from "@/lib/supabase";
 import type {
   GameType,
@@ -60,7 +60,6 @@ export default function CompetitionScorer({
   const [expanded, setExpanded] = useState<number | null>(null);
   const [originalBidder, setOriginalBidder] = useState(0);
   const [gameType, setGameType] = useState<GameType>("صن");
-  const [stage, setStage] = useState<"أول" | "ثاني">("أول");
   const [enteredTeam, setEnteredTeam] = useState<TeamCode>("B");
   const [rawScore, setRawScore] = useState(0);
   const [multiplier, setMultiplier] = useState<Multiplier>(1);
@@ -78,6 +77,8 @@ export default function CompetitionScorer({
   const [announcement, setAnnouncement] = useState<RoundAnnouncement | null>(null);
   const [shownRoundJokeIds, setShownRoundJokeIds] = useState<string[]>([]);
   const [matchInspectionShown, setMatchInspectionShown] = useState(false);
+  const [soundMuted, setSoundMuted] = useState(false);
+  const spokenSummaryKey = useRef("");
 
   useEffect(() => {
     try {
@@ -87,6 +88,28 @@ export default function CompetitionScorer({
       setRecentJokeIds([]);
     }
   }, []);
+
+  useEffect(() => {
+    setSoundMuted(localStorage.getItem(SOUND_SETTING_KEY) === "true");
+    const listener = (event: Event) => setSoundMuted(Boolean((event as CustomEvent<{ muted: boolean }>).detail?.muted));
+    window.addEventListener(SOUND_SETTING_EVENT, listener);
+    return () => window.removeEventListener(SOUND_SETTING_EVENT, listener);
+  }, []);
+
+  function speak(text: string) {
+    if (soundMuted || !text || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "ar-AE";
+    utterance.rate = 0.92;
+    const arabicVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith("ar"));
+    if (arabicVoice) utterance.voice = arabicVoice;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  useEffect(() => {
+    if (announcement) speak(announcement.text);
+  }, [announcement, soundMuted]);
 
   const names = selected.map((id) => active.find((player) => player.id === id)?.name || "");
   const validPlayers = new Set(selected.filter(Boolean)).size === 4;
@@ -105,7 +128,6 @@ export default function CompetitionScorer({
   const pSummary = projectSummary(gameType, projects, tieWinner);
   const rawError = validateRawScore(gameType, rawScore);
   const sunDoubleAllowed = sunMultiplierAllowed(gameType, originalBidder, scoreBeforeEntry.a, scoreBeforeEntry.b);
-  const askelAllowed = originalBidder === dealer || originalBidder === dealerLeftSeat(dealer);
   const setupLocked = rounds.length > 0 || saved;
   const generatedSummary = useMemo(() => {
     if (!endState.ended || !validPlayers || editing !== null) return null;
@@ -121,6 +143,14 @@ export default function CompetitionScorer({
     });
   }, [editing, endState.ended, historicalProfiles, matchKey, names, recentJokeIds, rounds, selected, totals.a, totals.b, validPlayers]);
   const finalSummary = lockedSummary ?? generatedSummary;
+
+  useEffect(() => {
+    if (!finalSummary?.jokes.length) return;
+    const key = `${matchKey}:${finalSummary.jokeIds.join(",")}`;
+    if (spokenSummaryKey.current === key) return;
+    spokenSummaryKey.current = key;
+    speak(finalSummary.jokes.join(". "));
+  }, [finalSummary, matchKey, soundMuted]);
 
   useEffect(() => {
     if (!endState.ended || !generatedSummary || matchInspectionShown) return;
@@ -171,6 +201,17 @@ export default function CompetitionScorer({
     }, 90);
   }
 
+  function passDealerForRedeal() {
+    if (!validPlayers || !dealerChosen || saved || endState.ended || editing !== null) return;
+    const next = nextDealerToRight(dealer);
+    setDealer(next);
+    setBidderAndDefaultScoreTeam(next);
+    resetEntry();
+    setOriginalBidder(next);
+    setEnteredTeam(defaultScoreTeamForBidder(next));
+    setNotice("محد شرى — انتقل التوزيع للاعب التالي بدون تسجيل راوند");
+  }
+
   function qty(team: TeamCode, type: ProjectType) {
     return projects.find((project) => project.team === team && project.type === type)?.quantity || 0;
   }
@@ -192,7 +233,6 @@ export default function CompetitionScorer({
     setTieWinner(null);
     setKaboot(null);
     setReverseKaboot(null);
-    setStage("أول");
     setGameType("صن");
     setEnteredTeam(defaultScoreTeamForBidder(originalBidder));
     setEditing(null);
@@ -226,8 +266,8 @@ export default function CompetitionScorer({
       dealer_position: dealer,
       bidder_position: effectiveBidder,
       original_bidder_position: originalBidder,
-      exposed_card_receiver_position: gameType === "أشكل" ? teammateSeat(originalBidder) : null,
-      bidding_stage: stage,
+      exposed_card_receiver_position: null,
+      bidding_stage: "أول",
       game_type: gameType,
       multiplier,
       multiplier_announcer_position: multiplierAnnouncer,
@@ -262,7 +302,10 @@ export default function CompetitionScorer({
       setOriginalBidder(nextEntryBidder);
       setEnteredTeam(defaultScoreTeamForBidder(nextEntryBidder));
     }
-    const nextAnnouncement = buildRoundAnnouncement({
+    const resultingRounds = editing
+      ? rounds.map((item) => item.sequence_no === editing ? round : item).sort((a, b) => a.sequence_no - b.sequence_no)
+      : [...rounds, round];
+    const nextAnnouncement = buildProgressAnnouncement(resultingRounds) ?? buildRoundAnnouncement({
       matchKey,
       playerNames: names as [string, string, string, string],
       round,
@@ -281,7 +324,6 @@ export default function CompetitionScorer({
     setDealer(round.dealer_position);
     setOriginalBidder(round.original_bidder_position);
     setGameType(round.game_type);
-    setStage(round.bidding_stage);
     setEnteredTeam(round.entered_team);
     setRawScore(round.raw_card_score);
     setMultiplier(round.multiplier);
@@ -380,7 +422,6 @@ export default function CompetitionScorer({
     setExpanded(null);
     setOriginalBidder(0);
     setGameType("صن");
-    setStage("أول");
     setEnteredTeam("B");
     setRawScore(0);
     setMultiplier(1);
@@ -440,7 +481,7 @@ export default function CompetitionScorer({
         <option value="">{`المقعد ${index + 1}`}</option>
         {active.map((player) => <option key={player.id} value={player.id} disabled={selected.includes(player.id) && value !== player.id}>{player.name}{player.nickname ? ` (${player.nickname})` : ""}</option>)}
       </select>)}</div>
-      <DealerTable names={names} dealer={dealer} onDealer={(index) => { if (!setupLocked) { setDealer(index); setDealerChosen(true); setBidderAndDefaultScoreTeam(index); } }} />
+      <DealerTable names={names} dealer={dealer} canPass={validPlayers && dealerChosen && !saved && !endState.ended && editing === null} onPassDealer={passDealerForRedeal} onDealer={(index) => { if (!setupLocked) { setDealer(index); setDealerChosen(true); setBidderAndDefaultScoreTeam(index); } }} />
       <button className="primary wide dealerRandom" onClick={randomDealer} disabled={dealerAnimating || !validPlayers || setupLocked}>
         <Sparkles size={18}/>{dealerAnimating ? "جاري الاختيار..." : "من يبدأ التوزيع؟"}
       </button>
@@ -449,10 +490,7 @@ export default function CompetitionScorer({
     {!saved && <div className="card scoreEntry">
       <div className="sectionHeader"><h3>{editing ? `تعديل الراوند ${editing}` : "الراوند الحالي"}</h3>{editing && <button className="textOnly" onClick={resetEntry}>إلغاء التعديل</button>}</div>
       <label>الطالع<select value={originalBidder} onChange={(event) => setBidderAndDefaultScoreTeam(Number(event.target.value))}>{names.map((name, index) => <option key={index} value={index}>{name || `اللاعب ${index + 1}`}</option>)}</select></label>
-      <div className="twoColumns">
-        <label>مرحلة الشراء<select value={stage} onChange={(event) => setStage(event.target.value as "أول" | "ثاني")}><option>أول</option><option>ثاني</option></select></label>
-        <label>نوع اللعب<select value={gameType} onChange={(event) => { const next = event.target.value as GameType; setGameType(next); setProjects([]); if (next !== "حكم" && multiplier > 2) { setMultiplier(1); setMultiplierAnnouncer(null); } }}><option>صن</option><option>حكم</option><option disabled={!askelAllowed}>أشكل</option></select></label>
-      </div>
+      <div className="gameTypeLine"><span>نوع اللعب</span><div className="gameTypeButtons">{(["صن", "حكم"] as GameType[]).map((type) => <button type="button" key={type} className={gameType === type ? "active" : ""} onClick={() => { setGameType(type); setProjects([]); if (type !== "حكم" && multiplier > 2) { setMultiplier(1); setMultiplierAnnouncer(null); } }}>{type}</button>)}</div></div>
       <div className="twoColumns">
         <label>أدخل عدد أي فريق<select value={enteredTeam} onChange={(event) => setEnteredTeam(event.target.value as TeamCode)}><option value="A">الفريق الأول</option><option value="B">الفريق الثاني</option></select></label>
         <label>عدد الورق<input type="number" min="0" value={rawScore} onChange={(event) => setRawScore(Number(event.target.value))} /></label>

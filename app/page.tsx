@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
+import SoundToggle from "@/components/SoundToggle";
 import Nav, { type Tab } from "@/components/Nav";
 import PlayersPanel from "@/components/PlayersPanel";
 import CasualScorer from "@/components/CasualScorer";
 import CompetitionScorer from "@/components/CompetitionScorer";
 import HomePanel from "@/components/HomePanel";
 import StandingsPanel from "@/components/StandingsPanel";
+import StatsPanel from "@/components/StatsPanel";
 import { mergeCompletedMatchSnapshot } from "@/lib/data";
 import { buildPlayerProfiles } from "@/lib/analytics";
 import { isSupabaseConfigured, SHARED_GROUP_CODE, supabase } from "@/lib/supabase";
@@ -101,7 +103,7 @@ export default function Page() {
   const playerProfiles = useMemo(() => buildPlayerProfiles(players, matches, hands), [hands, matches, players]);
 
   return <main className="appShell">
-    <header className="topBar"><div className="logo"><span>♠</span><div><strong>Balot Arena</strong><small>الحسبة والمنافسات</small></div></div><ThemeToggle/></header>
+    <header className="topBar"><div className="logo"><span>♠</span><div><strong>Balot Arena</strong><small>الحسبة والمنافسات</small></div></div><div className="headerActions"><SoundToggle/><ThemeToggle/></div></header>
     <div className="content">
       {!isSupabaseConfigured && <div className="alert">أضف متغيرات Supabase في Vercel ثم أعد النشر.</div>}
       {error && <div className="alert">{error}</div>}
@@ -117,7 +119,8 @@ export default function Page() {
           }
           await load(true);
         }}/>} 
-        {tab === "standings" && <StandingsPanel players={players} matches={matches}/>} 
+        {tab === "standings" && <StandingsPanel players={players} matches={matches}/>}
+        {tab === "stats" && <StatsPanel players={players} matches={matches} hands={hands} profiles={playerProfiles}/>} 
       </>}
     </div>
     <Nav tab={tab} setTab={setTab}/>

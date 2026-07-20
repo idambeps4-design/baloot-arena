@@ -37,11 +37,11 @@ export const JOKE_CATALOG: Record<JokeEvent, readonly JokeOption[]> = {
     { id: "failed-3", text: "شكله حسب الورق قبل لا يشوفه" },
   ],
   abdullah: [
-    { id: "abdullah-sharif-inspection", text: "زخه التفتيش" },
+    { id: "abdullah-sharif-inspection", text: "سوالفك معاك هندية، وراخينك التفتيش جنك بنقالي صايع" },
   ],
   kaboot: [
-    { id: "kaboot-1", text: "كبوت… الفريق الثاني حضر يتفرج" },
-    { id: "kaboot-2", text: "ما خلو لهم حتى ذكرى من الراوند" },
+    { id: "kaboot-1", text: "يايين تصورون الصكة جنكم؟" },
+    { id: "kaboot-2", text: "شباب راقدين شو؟" },
   ],
   reverse: [
     { id: "reverse-1", text: "كبوت عكسي… هذي ما تنمسح بسهولة" },
@@ -61,11 +61,11 @@ export const JOKE_CATALOG: Record<JokeEvent, readonly JokeOption[]> = {
     { id: "large-3", text: "النتيجة تحتاج لجنة تحقيق" },
   ],
   close: [
-    { id: "close-1", text: "صكة تحبس الأنفاس إلى آخر راوند" },
-    { id: "close-2", text: "فرق بسيط لكن الضغط كان كبير" },
+    { id: "close-1", text: "في مستوى... عجبتوني" },
+    { id: "close-2", text: "في مستوى... عجبتوني" },
   ],
   losingStreak: [
-    { id: "losing-streak-1", text: "الخسارة صارت عادة يومية" },
+    { id: "losing-streak-1", text: "أخوي مدريدي، انته كله موسم صفري" },
     { id: "losing-streak-2", text: "يحتاج يغير الكرسي يمكن يتغير الحظ" },
   ],
   winningStreak: [
@@ -73,8 +73,8 @@ export const JOKE_CATALOG: Record<JokeEvent, readonly JokeOption[]> = {
     { id: "winning-streak-2", text: "سلسلة انتصارات والباقي يحاولون يلحقون" },
   ],
   projects: [
-    { id: "projects-1", text: "المشاريع لعبت قبل الورق" },
-    { id: "projects-2", text: "المشاريع شالت الراوند كامل" },
+    { id: "projects-1", text: "مشاريع يا ريال مشاريع" },
+    { id: "projects-2", text: "مشاريع يا ريال مشاريع" },
   ],
 };
 
@@ -278,7 +278,7 @@ export function buildMatchJokes(input: MatchJokeInput): MatchJokeResult {
 
   const detectedEvents = MATCH_EVENT_PRIORITY.filter((event) => events.has(event));
   const eventLabels: string[] = [];
-  if (events.has("abdullah")) eventLabels.push("زخه التفتيش");
+  if (events.has("abdullah")) eventLabels.push("سوالفك معاك هندية، وراخينك التفتيش جنك بنقالي صايع");
   if (events.has("comeback")) eventLabels.push(`عودة من فارق ${comebackDeficit}`);
   if (events.has("failed")) eventLabels.push(`${failedCount} طلب فاشل`);
   if (events.has("large")) eventLabels.push("فوز كبير");
@@ -312,4 +312,18 @@ export function buildMatchJokes(input: MatchJokeInput): MatchJokeResult {
     winningStreakNames,
     losingStreakNames,
   };
+}
+
+export function buildProgressAnnouncement(rounds: Round[]): RoundAnnouncement | null {
+  if (rounds.length === 11) {
+    return { id: "long-match-11", title: "الصكة طولت", text: "البنزين قضى وما قضينا", special: false };
+  }
+  if (rounds.length < 3) return null;
+  const lastThree = rounds.slice(-3).map(roundWinner);
+  const streakWinner = lastThree[0];
+  const previousWinner = rounds.length > 3 ? roundWinner(rounds.at(-4)!) : null;
+  if (streakWinner && lastThree.every((team) => team === streakWinner) && previousWinner !== streakWinner) {
+    return { id: `three-losses-${streakWinner}-${rounds.length}`, title: "ثلاثة راوندات ورا بعض", text: "قدم مستوى يا هطف", special: false };
+  }
+  return null;
 }
