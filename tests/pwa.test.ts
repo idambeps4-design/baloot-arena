@@ -33,7 +33,7 @@ test("PWA icon files have the required dimensions", () => {
 
 test("service worker caches the shell but never caches APIs, RSC, or cross-origin Supabase traffic", () => {
   const source = readFileSync("public/sw.js", "utf8");
-  assert.match(source, /balot-arena-shell-v1\.1\.0/);
+  assert.match(source, /balot-arena-shell-v1\.4\.0/);
   assert.match(source, /url\.origin !== self\.location\.origin/);
   assert.match(source, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(source, /url\.searchParams\.has\("_rsc"\)/);

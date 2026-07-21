@@ -1,4 +1,4 @@
-const CACHE_NAME = "balot-arena-shell-v1.1.0";
+const CACHE_NAME = "balot-arena-shell-v1.4.0";
 const APP_SHELL = [
   "/",
   "/offline",
@@ -56,7 +56,8 @@ self.addEventListener("fetch", (event) => {
     url.pathname === "/manifest.webmanifest" ||
     url.pathname === "/apple-touch-icon.png" ||
     url.pathname === "/favicon.ico" ||
-    ["style", "script", "image", "font"].includes(request.destination);
+    url.pathname.startsWith("/audio/jokes/") ||
+    ["style", "script", "image", "font", "audio"].includes(request.destination);
 
   if (!isStaticAsset) return;
 
