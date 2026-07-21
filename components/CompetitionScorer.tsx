@@ -17,6 +17,7 @@ import {
 } from "@/lib/scoring";
 import { buildMatchSummary, buildRoundAnnouncement } from "@/lib/analytics";
 import { buildProgressAnnouncement } from "@/lib/jokes";
+import { chooseAudioSource } from "@/lib/jokeAudio";
 import { SOUND_SETTING_EVENT, SOUND_SETTING_KEY } from "./SoundToggle";
 import { supabase } from "@/lib/supabase";
 import type {
@@ -79,6 +80,7 @@ export default function CompetitionScorer({
   const [matchInspectionShown, setMatchInspectionShown] = useState(false);
   const [soundMuted, setSoundMuted] = useState(false);
   const spokenSummaryKey = useRef("");
+  const activeAudio = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     try {
@@ -96,9 +98,17 @@ export default function CompetitionScorer({
     return () => window.removeEventListener(SOUND_SETTING_EVENT, listener);
   }, []);
 
-  function speak(text: string) {
-    if (soundMuted || !text || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
+  function stopJokeAudio() {
+    if (activeAudio.current) {
+      activeAudio.current.pause();
+      activeAudio.current.currentTime = 0;
+      activeAudio.current = null;
+    }
+    window.speechSynthesis?.cancel();
+  }
+
+  function speakFallback(text: string) {
+    if (!text || !("speechSynthesis" in window)) return;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ar-AE";
     utterance.rate = 0.92;
@@ -107,9 +117,35 @@ export default function CompetitionScorer({
     window.speechSynthesis.speak(utterance);
   }
 
+  function playJoke(id: string, text: string) {
+    if (soundMuted || !text) return;
+    stopJokeAudio();
+    const source = chooseAudioSource(id);
+    if (!source) {
+      speakFallback(text);
+      return;
+    }
+    const audio = new Audio(source);
+    activeAudio.current = audio;
+    audio.preload = "auto";
+    audio.addEventListener("ended", () => {
+      if (activeAudio.current === audio) activeAudio.current = null;
+    }, { once: true });
+    audio.addEventListener("error", () => {
+      if (activeAudio.current === audio) activeAudio.current = null;
+      speakFallback(text);
+    }, { once: true });
+    void audio.play().catch(() => speakFallback(text));
+  }
+
   useEffect(() => {
-    if (announcement) speak(announcement.text);
-  }, [announcement, soundMuted]);
+    if (soundMuted) stopJokeAudio();
+  }, [soundMuted]);
+
+  useEffect(() => {
+    if (announcement) playJoke(announcement.id, announcement.text);
+    return () => stopJokeAudio();
+  }, [announcement]);
 
   const names = selected.map((id) => active.find((player) => player.id === id)?.name || "");
   const validPlayers = new Set(selected.filter(Boolean)).size === 4;
@@ -149,7 +185,8 @@ export default function CompetitionScorer({
     const key = `${matchKey}:${finalSummary.jokeIds.join(",")}`;
     if (spokenSummaryKey.current === key) return;
     spokenSummaryKey.current = key;
-    speak(finalSummary.jokes.join(". "));
+    const firstId = finalSummary.jokeIds[0];
+    if (firstId) playJoke(firstId, finalSummary.jokes[0] ?? "");
   }, [finalSummary, matchKey, soundMuted]);
 
   useEffect(() => {

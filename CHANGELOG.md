@@ -20,3 +20,9 @@
 - Added requested long-match, three-loss, kaboot, close-match, Abdullah Sharif, losing-streak, and projects wording.
 - Added advanced player statistics, date filters, search, and completed-match CSV export.
 - Expanded automated tests to 58 passing tests.
+
+## 1.4.0
+- Added user-recorded M4A narration for available jokes with randomized variants.
+- Kept Arabic device speech as a fallback when a recording is unavailable or blocked.
+- Added offline runtime caching for joke audio.
+- Fixed sticky header and joke overlay positioning around iPhone Dynamic Island/notch safe areas.
